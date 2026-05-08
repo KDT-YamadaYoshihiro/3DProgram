@@ -13,12 +13,15 @@
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <wrl/client.h> 
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
 
 //-----------------------------------------------------------------------------
 // Linker
 //-----------------------------------------------------------------------------
 #pragma comment( lib, "d3d12.lib" )
 #pragma comment( lib, "dxgi.lib" )
+#pragma comment( lib, "d3dcompiler.lib" )
 
 //-----------------------------------------------------------------------------
 // Type definitions.
@@ -68,10 +71,22 @@ private:
     ComPtr<ID3D12GraphicsCommandList>   m_pCmdList;                     // コマンドリストです.
     ComPtr<ID3D12DescriptorHeap>        m_pHeapRTV;                     // ディスクリプタヒープです(レンダーターゲットビュー).
     ComPtr<ID3D12Fence>                 m_pFence;                       // フェンスです.
+    ComPtr<ID3D12DescriptorHeap>        m_pHeapCBV;                     // ディスクリプタヒープです.
+    ComPtr<ID3D12Resource>              m_pVB;                          // 頂点バッファです.
+    ComPtr<ID3D12Resource>              m_pCB[FrameCount];              // 定数バッファです.
+    ComPtr<ID3D12RootSignature>         m_pRootSignature;               // ルートシグネチャです.
+    ComPtr<ID3D12PipelineState>         m_pPSO;                         // パイプラインステートです.
+
     HANDLE                              m_FenceEvent;                   // フェンスイベントです.
     uint64_t                            m_FenceCounter[FrameCount];     // フェンスカウンターです.
     uint32_t                            m_FrameIndex;                   // フレーム番号です.
     D3D12_CPU_DESCRIPTOR_HANDLE         m_HandleRTV[FrameCount];        // CPUディスクリプタ(レンダーターゲットビュー)です.
+    D3D12_VERTEX_BUFFER_VIEW            m_VBV;                          // 頂点バッファビューです.
+    D3D12_VIEWPORT                      m_Viewport;                     // ビューポートです.
+    D3D12_RECT                          m_Scissor;                      // シザー矩形です.
+    ConstantBufferView<Transform>       m_CBV[FrameCount];              // 定数バッファビューです.
+    float                               m_RotateAngle;                  // 回転角です.
+
 
     //=========================================================================
     // private methods.
@@ -86,6 +101,8 @@ private:
     void Render();
     void WaitGpu();
     void Present(uint32_t interval);
+    bool OnInit();
+    void OnTerm();
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
 };
